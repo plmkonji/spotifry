@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0b0b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Spotifry" />
+  <title>Spotifry</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">GOOD MORNING</p>
+        <h1>Spotifry</h1>
+      </div>
+      <button class="icon-btn" id="profileBtn" aria-label="Profile">N</button>
+    </header>
+
+    <main>
+      <section class="hero-card">
+        <div class="hero-copy">
+          <span class="pill">DAILY MIX</span>
+          <h2>Songs for pretending your life is a movie</h2>
+          <p>Unreasonably dramatic tracks for walking through a grocery store.</p>
+          <button class="play-big" data-play-index="0">▶ Play</button>
+        </div>
+        <div class="hero-art">🎧</div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h3>Made suspiciously for you</h3>
+        </div>
+        <div class="grid" id="playlistGrid"></div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h3>Recently played</h3>
+        </div>
+        <div class="track-list" id="trackList"></div>
+      </section>
+
+      <section id="searchSection" class="search-section hidden">
+        <div class="search-wrap">
+          <input id="searchInput" type="search" placeholder="Search fake songs, moods, artists…" autocomplete="off" />
+        </div>
+        <div class="track-list" id="searchResults"></div>
+      </section>
+
+      <section id="librarySection" class="library-section hidden">
+        <div class="section-head"><h3>Your liked nonsense</h3></div>
+        <div class="track-list" id="likedList"></div>
+      </section>
+    </main>
+
+    <div class="mini-player" id="miniPlayer">
+      <div class="mini-art" id="miniArt">🌃</div>
+      <div class="mini-meta">
+        <strong id="miniTitle">Midnight Costco</strong>
+        <span id="miniArtist">The Receipt Inspectors</span>
+      </div>
+      <button class="heart-btn" id="miniLike" aria-label="Like current song">♡</button>
+      <button class="mini-play" id="miniPlay" aria-label="Play or pause">▶</button>
+    </div>
+
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-tab="home"><span>⌂</span>Home</button>
+      <button class="nav-btn" data-tab="search"><span>⌕</span>Search</button>
+      <button class="nav-btn" data-tab="library"><span>▤</span>Library</button>
+    </nav>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>

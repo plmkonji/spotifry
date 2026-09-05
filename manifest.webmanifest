@@ -1,0 +1,13 @@
+{
+  "name": "Spotifry — Definitely Not Spotify",
+  "short_name": "Spotifry",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#090909",
+  "theme_color": "#0b0b0b",
+  "description": "A tiny parody music PWA with fake playlists and fake songs.",
+  "icons": [
+    {"src":"icon-192.png","sizes":"192x192","type":"image/png"},
+    {"src":"icon-512.png","sizes":"512x512","type":"image/png"}
+  ]
+}
