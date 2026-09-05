@@ -1,12 +1,12 @@
 const songs = [
-  {title:'Midnight Costco',artist:'The Receipt Inspectors',emoji:'🌃'},
-  {title:'Left on Read Again',artist:'Typing…',emoji:'📱'},
-  {title:'Quarter Tank Energy',artist:'Low Fuel',emoji:'⛽'},
-  {title:'One More Episode',artist:'Sleep Debt',emoji:'📺'},
-  {title:'Parking Garage Level 4',artist:'Where Is My Car?',emoji:'🅿️'},
-  {title:'Sunday Scaries (Extended Mix)',artist:'Monday Morning',emoji:'😵‍💫'},
-  {title:'Air Fryer Beeping',artist:'Kitchen DJ',emoji:'🍟'},
-  {title:'I Definitely Need This',artist:'Impulse Purchase',emoji:'🛒'}
+  {title:'Midnight Costco',artist:'Kevin MacLeod — EDM Detection Mode',emoji:'🌃',audio:'https://incompetech.com/music/royalty-free/mp3-royaltyfree/EDM%20Detection%20Mode.mp3'},
+  {title:'Left on Read Again',artist:'Kevin MacLeod — Cipher',emoji:'📱',audio:'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cipher.mp3'},
+  {title:'Quarter Tank Energy',artist:'Kevin MacLeod — Mighty Like Us',emoji:'⛽',audio:'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Mighty%20Like%20Us.mp3'},
+  {title:'One More Episode',artist:'Kevin MacLeod — The Lift',emoji:'📺',audio:'https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Lift.mp3'},
+  {title:'Parking Garage Level 4',artist:'Kevin MacLeod — 8bit Dungeon Level',emoji:'🅿️',audio:'https://incompetech.com/music/royalty-free/mp3-royaltyfree/8bit%20Dungeon%20Level.mp3'},
+  {title:'Sunday Scaries (Extended Mix)',artist:'Kevin MacLeod — Spacial Harvest',emoji:'😵‍💫',audio:'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Spacial%20Harvest.mp3'},
+  {title:'Air Fryer Beeping',artist:'Kevin MacLeod — Cloud Dancer',emoji:'🍟',audio:'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cloud%20Dancer.mp3'},
+  {title:'I Definitely Need This',artist:'Kevin MacLeod — Equatorial Complex',emoji:'🛒',audio:'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Equatorial%20Complex.mp3'}
 ];
 
 const playlists = [
@@ -16,6 +16,8 @@ const playlists = [
   ['2AM Wikipedia Spiral','Songs for learning one useless fact too deeply.','🌀']
 ];
 
+const audio = new Audio();
+audio.preload = 'metadata';
 let current = 0;
 let playing = false;
 let liked = new Set(JSON.parse(localStorage.getItem('likedSongs') || '[]'));
@@ -27,7 +29,7 @@ const likedList = $('#likedList');
 const searchResults = $('#searchResults');
 
 function saveLikes(){ localStorage.setItem('likedSongs', JSON.stringify([...liked])); }
-function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1200); }
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1600); }
 
 function renderPlaylists(){
   playlistGrid.innerHTML = playlists.map((p,i)=>`<article class="playlist" data-play-index="${i}"><div class="playlist-art">${p[2]}</div><strong>${p[0]}</strong><span>${p[1]}</span></article>`).join('');
@@ -38,9 +40,7 @@ function trackHTML(song,i){
 }
 
 function renderTracks(target=trackList, arr=songs){
-  target.innerHTML = arr.map(item=>{
-    const i=songs.indexOf(item); return trackHTML(item,i);
-  }).join('') || '<p style="color:#888;padding:18px">Nothing here yet.</p>';
+  target.innerHTML = arr.map(item=>{ const i=songs.indexOf(item); return trackHTML(item,i); }).join('') || '<p style="color:#888;padding:18px">Nothing here yet.</p>';
 }
 function renderLiked(){ renderTracks(likedList, songs.filter((_,i)=>liked.has(i))); }
 
@@ -50,7 +50,31 @@ function updateMini(){
   $('#miniPlay').textContent=playing?'❚❚':'▶';
   $('#miniLike').textContent=liked.has(current)?'♥':'♡'; $('#miniLike').classList.toggle('liked',liked.has(current));
 }
-function playIndex(i){ current=Number(i); playing=true; updateMini(); toast(`Now pretending to play “${songs[current].title}”`); }
+
+async function playIndex(i){
+  current=Number(i);
+  const s=songs[current];
+  if(audio.src !== s.audio) audio.src=s.audio;
+  try {
+    await audio.play();
+    playing=true;
+    updateMini();
+    toast(`Now playing “${s.title}”`);
+  } catch(err) {
+    playing=false;
+    updateMini();
+    toast('Could not start audio. Tap play again.');
+  }
+}
+
+async function togglePlayback(){
+  if(!audio.src){ await playIndex(current); return; }
+  if(audio.paused){
+    try { await audio.play(); playing=true; } catch(err){ toast('Could not start audio.'); }
+  } else { audio.pause(); playing=false; }
+  updateMini();
+}
+
 function toggleLike(i){ i=Number(i); liked.has(i)?liked.delete(i):liked.add(i); saveLikes(); renderTracks(); renderLiked(); updateMini(); }
 
 renderPlaylists(); renderTracks(); renderLiked(); updateMini();
@@ -69,12 +93,28 @@ document.addEventListener('click',e=>{
   }
 });
 
-$('#miniPlay').addEventListener('click',()=>{ playing=!playing; updateMini(); });
+$('#miniPlay').addEventListener('click',togglePlayback);
 $('#miniLike').addEventListener('click',()=>toggleLike(current));
 $('#profileBtn').addEventListener('click',()=>toast('Premium-ish member since 9:58 AM'));
 $('#searchInput').addEventListener('input',e=>{
   const q=e.target.value.toLowerCase().trim();
   renderTracks(searchResults, q ? songs.filter(s=>(s.title+' '+s.artist).toLowerCase().includes(q)) : songs);
 });
+
+audio.addEventListener('play',()=>{ playing=true; updateMini(); });
+audio.addEventListener('pause',()=>{ playing=false; updateMini(); });
+audio.addEventListener('ended',()=>playIndex((current+1)%songs.length));
+audio.addEventListener('error',()=>{ playing=false; updateMini(); toast('This track could not be loaded.'); });
+
+if('mediaSession' in navigator){
+  audio.addEventListener('play',()=>{
+    const s=songs[current];
+    navigator.mediaSession.metadata=new MediaMetadata({title:s.title,artist:s.artist,album:'Spotify — Royalty-Free Mix'});
+  });
+  navigator.mediaSession.setActionHandler('play',()=>audio.play());
+  navigator.mediaSession.setActionHandler('pause',()=>audio.pause());
+  navigator.mediaSession.setActionHandler('nexttrack',()=>playIndex((current+1)%songs.length));
+  navigator.mediaSession.setActionHandler('previoustrack',()=>playIndex((current-1+songs.length)%songs.length));
+}
 
 if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js')); }
